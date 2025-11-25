@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HBZxLRG - Dashboard</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 id="confirm-title">ยืนยันการดำเนินการ</h2>
+            <p id="confirm-message" style="margin: 20px 0; color: #b0b0b0;"></p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="cancelConfirmation()">ยกเลิก</button>
+                <button class="btn btn-danger" id="confirm-btn" onclick="confirmAction()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Verification Modal -->
+    <div id="password-verification-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>ยืนยันด้วยรหัสผ่าน</h2>
+            <p style="margin: 15px 0; color: #b0b0b0;">กรุณากรอกรหัสผ่านเพื่อยืนยันการลบ KEY นี้</p>
+            <div style="margin: 20px 0;">
+                <label for="verify-password" style="display: block; margin-bottom: 8px;">รหัสผ่าน</label>
+                <input type="password" id="verify-password" class="form-select" placeholder="กรอกรหัสผ่าน" style="width: 100%; padding: 10px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="cancelPasswordVerification()">ยกเลิก</button>
+                <button class="btn btn-danger" onclick="confirmPasswordVerification()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Key Purchase Info -->
+    <div id="key-purchase-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('key-purchase-modal')">&times;</span>
+            <h2>ข้อมูล KEY VIP</h2>
+            <div id="modal-key-info" style="margin: 20px 0;">
+                <p><strong>KEY ID:</strong> <span id="modal-key-id">-</span> 
+                    <button class="btn btn-small" onclick="copyModalKey()" style="margin-left: 10px;">
+                        <i class="fas fa-copy"></i> คัดลอก
+                    </button>
+                </p>
+                <p><strong>วันที่สร้าง:</strong> <span id="modal-key-created">-</span> <span id="modal-key-created-time">-</span></p>
+                <p><strong>ระยะเวลา:</strong> <span id="modal-key-days">-</span> วัน</p>
+                <p><strong>วันหมดอายุ:</strong> <span id="modal-key-expires">-</span> <span id="modal-key-expires-time">08:00:00 น.</span></p>
+                <p><strong>การจำกัดเครื่องล็อกอิน:</strong> <span id="modal-key-devices">-</span> เครื่อง</p>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="closeModal('key-purchase-modal')" style="margin-top: 20px;">ปิด</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <img src="./assets/panda-logo.png" alt="Logo" class="sidebar-logo">
+                    <span class="brand-name">HBZxLRG</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()" tabindex="-1">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-menu">
+                <button class="menu-item active" onclick="showDashboardPage('dashboard-main', this)">
+                    <i class="fas fa-home"></i>
+                    <span>แดชบอร์ด</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('topup-page', this)">
+                    <i class="fas fa-wallet"></i>
+                    <span>เติมเงิน</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('buy-key-page', this)">
+                    <i class="fas fa-key"></i>
+                    <span>ซื้อ KEY VIP</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('buy-device-page', this)">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>เพิ่มเครื่องล็อกอิน</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('my-keys-page', this)">
+                    <i class="fas fa-key"></i>
+                    <span>KEY VIP ของฉัน</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('renew-key-page', this)">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>ต่ออายุ KEY VIP</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('topup-history-page', this)">
+                    <i class="fas fa-history"></i>
+                    <span>ประวัติเติมเงิน</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('reset-uid-page', this)">
+                    <i class="fas fa-redo"></i>
+                    <span>รีเซ็ต UID</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('download-page', this)">
+                    <i class="fas fa-download"></i>
+                    <span>ดาวน์โหลด</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('tutorial-page', this)">
+                    <i class="fas fa-book"></i>
+                    <span>วิธีใช้งานและสอนติดตั้ง</span>
+                </button>
+                <button class="menu-item" onclick="showDashboardPage('profile-page', this)">
+                    <i class="fas fa-user-cog"></i>
+                    <span>ตั้งค่าโปรไฟล์</span>
+                </button>
+                <button class="menu-item menu-item-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+                <a href="./admin.html" id="admin-panel-btn" class="menu-item menu-item-admin" style="text-decoration: none; display: none;">
+                    <i class="fas fa-cog"></i>
+                    <span>Admin Panel</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="topbar">
+                <h1 id="page-title">แดชบอร์ด</h1>
+                <div id="topbar-balance-container">
+                    <span id="topbar-balance" style="color: var(--primary-color);">500</span> ฿
+                </div>
+                <div class="user-section">
+                    <span id="user-name" style="color: #3498db; font-weight: bold;">ผู้ใช้</span>
+                    <div class="avatar">👤</div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Main Page -->
+                <div id="dashboard-main" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="stat-icon fas fa-coins"></i>
+                            <h3>ยอดเงินคงเหลือ</h3>
+                            <p class="stat-value">฿<span id="balance">500</span></p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="stat-icon fas fa-key"></i>
+                            <h3>KEY ทั้งหมด</h3>
+                            <p class="stat-value"><span id="total-keys">1</span> ตัว</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="stat-icon fas fa-exclamation-circle"></i>
+                            <h3>KEY หมดอายุ</h3>
+                            <p class="stat-value"><span id="expired-keys">0</span> ตัว</p>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>ธุรกรรมล่าสุด</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>รายการ</th>
+                                    <th>จำนวนเงิน</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-transactions">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section">
+                        <h3>ประวัติการซื้อ KEY</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>KEY</th>
+                                    <th>ประเภท</th>
+                                    <th>วันหมดอายุ</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="key-history">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Top Up Page -->
+                <div id="topup-page" class="page">
+                    <div class="form-card">
+                        <div class="topup-container">
+                            <div class="qr-section">
+                                <h3>สแกน QR Code</h3>
+                                <div class="qr-box">
+                                    <img src="./assets/QR.jpg" alt="QR Code" style="width: 100%; max-width: 240px; height: auto; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <button class="btn btn-secondary btn-block" onclick="downloadQR()">
+                                    <i class="fas fa-download"></i>
+                                    ดาวโหลด QR Code
+                                </button>
+                                <p class="qr-info">หมายเลขบัญชี: 3434238584 (ธนาคารกรุงเทพ)</p>
+                            </div>
+
+                            <div class="slip-section">
+                                <h3>อัพโหลดหลักฐาน</h3>
+                                <div class="upload-area" id="slip-upload" onclick="document.getElementById('slip-file').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>ลากไฟล์หรือคลิกเพื่อเลือก</p>
+                                    <input type="file" id="slip-file" accept="image/*" hidden onchange="handleSlipUpload(event)">
+                                </div>
+                                <p id="file-name" style="margin-top: 10px; text-align: center; display: none;">ยังไม่มีไฟล์</p>
+                                <div id="slip-image-container" class="slip-image-container" style="display: none;">
+                                    <img id="slip-preview-image" alt="Slip Preview" class="slip-preview-image">
+                                    <button class="btn btn-secondary btn-small" onclick="clearSlipUpload()" style="margin-top: 10px; width: 100%;">
+                                        <i class="fas fa-times"></i>
+                                        ลบรูป
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="amount-section">
+                                <h3>จำนวนเงินที่เติม (ต้องตรงกับในสลิป)</h3>
+                                <div class="input-wrapper">
+                                    <div class="input-with-prefix">
+                                        <span class="prefix">฿</span>
+                                        <input type="number" id="topup-amount" placeholder="100" min="100" step="100">
+                                    </div>
+                                    <button class="btn btn-primary btn-block" onclick="submitTopUp()">ส่งตรวจสอบ</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message" id="topup-message"></div>
+                </div>
+
+                <!-- Buy Key Page -->
+                <div id="buy-key-page" class="page">
+                    <div class="form-card">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div class="package-card">
+                                <div class="working-badge">ใช้งานได้</div>
+                                <h3>KEY VIP 3 วัน</h3>
+                                <p class="price">฿30</p>
+                                <ul class="features">
+                                    <li><i class="fas fa-check"></i> ใช้งานได้ 3 วัน</li>
+                                    <li><i class="fas fa-check"></i> จำกัดการใช้งาน 1 เครื่อง</li>
+                                    <li><i class="fas fa-check"></i> Support 24/7</li>
+                                </ul>
+                                <button class="btn btn-primary btn-block" onclick="buyKey(3, 30)">ซื้อเลย</button>
+                            </div>
+
+                            <div class="package-card featured">
+                                <div class="popular-badge">ยอดนิยม</div>
+                                <h3>KEY VIP 7 วัน</h3>
+                                <p class="price">฿60</p>
+                                <ul class="features">
+                                    <li><i class="fas fa-check"></i> ใช้งานได้ 7 วัน</li>
+                                    <li><i class="fas fa-check"></i> จำกัดการใช้งาน 1 เครื่อง</li>
+                                    <li><i class="fas fa-check"></i> Support 24/7</li>
+                                </ul>
+                                <button class="btn btn-primary btn-block" onclick="buyKey(7, 60)">ซื้อเลย</button>
+                            </div>
+
+                            <div class="package-card">
+                                <div class="longterm-badge">ระยะยาว</div>
+                                <h3>KEY VIP 15 วัน</h3>
+                                <p class="price">฿120</p>
+                                <ul class="features">
+                                    <li><i class="fas fa-check"></i> ใช้งานได้ 15 วัน</li>
+                                    <li><i class="fas fa-check"></i> จำกัดการใช้งาน 1 เครื่อง</li>
+                                    <li><i class="fas fa-check"></i> Support 24/7</li>
+                                </ul>
+                                <button class="btn btn-primary btn-block" onclick="buyKey(15, 120)">ซื้อเลย</button>
+                            </div>
+
+                            <div class="package-card">
+                                <div class="bestvalue-badge">สุดคุ้ม</div>
+                                <h3>KEY VIP 30 วัน</h3>
+                                <p class="price">฿200</p>
+                                <ul class="features">
+                                    <li><i class="fas fa-check"></i> ใช้งานได้ 30 วัน</li>
+                                    <li><i class="fas fa-check"></i> จำกัดการใช้งาน 1 เครื่อง</li>
+                                    <li><i class="fas fa-check"></i> Support 24/7</li>
+                                </ul>
+                                <button class="btn btn-primary btn-block" onclick="buyKey(30, 200)">ซื้อเลย</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message" id="buy-key-message"></div>
+                </div>
+
+                <!-- Buy Device Page -->
+                <div id="buy-device-page" class="page">
+                    <div class="form-card">
+                        <div class="device-selector">
+                            <div class="form-group">
+                                <label for="key-select">เลือก KEY</label>
+                                <select id="key-select" class="form-select" onchange="updateDeviceOptions()">
+                                    <option value="">-- เลือก KEY ที่ใช้งานอยู่ --</option>
+                                </select>
+                            </div>
+
+                            <div id="device-summary-container" style="display: none;" class="price-summary">
+                                <h4>สรุปการเติมเครื่องล่าสุด</h4>
+                                <p>KEY: <strong><span id="device-key-summary">-</span></strong></p>
+                                <p>วันหมดอายุ: <strong><span id="device-key-expires">-</span></strong></p>
+                                <p>จำนวนเครื่อง: <strong>1 เครื่อง</strong></p>
+                                <p>ราคา: <strong>฿30</strong></p>
+                                <hr>
+                                <h3>รวมทั้งสิ้น: <span id="device-total">฿30</span></h3>
+                                <button class="btn btn-primary btn-block" onclick="confirmBuyDevice()">ยืนยันการเติม</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>ประวัติการเพิ่มเครื่อง</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>KEY</th>
+                                    <th>ราคา</th>
+                                    <th>สถานะ</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="device-history-list">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #888;">ยังไม่มีการเพิ่มเครื่องที่บันทึก</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="message" id="device-message"></div>
+                </div>
+
+                <!-- My Keys Page -->
+                <div id="my-keys-page" class="page">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>KEY ID</th>
+                                <th>ประเภท</th>
+                                <th>เครื่องที่ใช้</th>
+                                <th>วันหมดอายุ</th>
+                                <th>เวลาหมดอายุ</th>
+                                <th>สถานะ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-list">
+                            <tr>
+                                <td>KEY-001-ABC</td>
+                                <td>7 วัน</td>
+                                <td>1/1</td>
+                                <td>2025-11-30</td>
+                                <td><span class="badge success">ใช้งานอยู่</span></td>
+                                <td>
+                                    <button class="btn btn-small btn-secondary" onclick="copyKey('KEY-001-ABC')" style="margin-right: 5px;"><i class="fas fa-copy"></i></button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteKey('KEY-001-ABC')"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="message" id="keys-message"></div>
+                </div>
+
+                <!-- Renew Key Page -->
+                <div id="renew-key-page" class="page">
+                    <div class="form-card">
+                        <h3>เลือ KEY</h3>
+                        <select id="select-key" class="form-select" onchange="showRenewKeyInfo()">
+                            <option value="">-- เลือก KEY --</option>
+                        </select>
+
+                        <div id="renew-key-info-container" style="display: none; margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px;">
+                            <h4>ข้อมูล KEY</h4>
+                            <p><strong>KEY ID:</strong> <span id="renew-key-info-id">-</span></p>
+                            <p><strong>ระยะเวลา:</strong> <span id="renew-key-info-days">-</span> วัน</p>
+                            <p><strong>วันหมดอายุ:</strong> <span id="renew-key-info-expires">-</span></p>
+                            <p><strong>เครื่องที่ใช้:</strong> <span id="renew-key-info-devices">-</span></p>
+                        </div>
+
+                        <h3 style="margin-top: 30px;">เลือกโปรแกรมต่ออายุ</h3>
+                        <div class="renew-packages">
+                            <button class="pkg-btn" onclick="confirmRenewKey(3, 30)">
+                                <p class="pkg-name">3 วัน</p>
+                                <p class="pkg-price">฿30</p>
+                            </button>
+                            <button class="pkg-btn" onclick="confirmRenewKey(7, 60)">
+                                <p class="pkg-name">7 วัน</p>
+                                <p class="pkg-price">฿60</p>
+                            </button>
+                            <button class="pkg-btn" onclick="confirmRenewKey(15, 120)">
+                                <p class="pkg-name">15 วัน</p>
+                                <p class="pkg-price">฿120</p>
+                            </button>
+                            <button class="pkg-btn" onclick="confirmRenewKey(30, 200)">
+                                <p class="pkg-name">30 วัน</p>
+                                <p class="pkg-price">฿200</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>ประวัติการต่ออายุ</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>KEY</th>
+                                    <th>ระยะเวลา</th>
+                                    <th>ราคา</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="renew-history-list">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #888;">ยังไม่มีการต่ออายุ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="message" id="renew-message"></div>
+                </div>
+
+                <!-- Topup History Page -->
+                <div id="topup-history-page" class="page">
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="showTopupHistoryTab('topup')" id="btn-topup-tab" style="flex: 1; background-color: var(--primary-color); color: #000;">การเติมเงิน</button>
+                        <button class="btn btn-secondary" onclick="showTopupHistoryTab('purchase')" id="btn-purchase-tab" style="flex: 1;">การซื้อ</button>
+                    </div>
+
+                    <div id="topup-history-topup-tab">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>จำนวนเงิน</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topup-history-topup-list">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #888;">ยังไม่มีการเติมเงิน</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="topup-history-purchase-tab" style="display: none;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>รายการ</th>
+                                    <th>จำนวนเงิน</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topup-history-purchase-list">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #888;">ยังไม่มีการซื้อ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="message" id="topup-history-message"></div>
+                </div>
+
+                <!-- Reset UID Page -->
+                <div id="reset-uid-page" class="page">
+                    <div class="form-card">
+                        <div class="info-section">
+                            <h3>จำกัดการใช้งาน</h3>
+                            <p style="color: #888; margin-bottom: 20px;">การรีเซ็ต UID สามารถใช้ได้ 1 ครั้ง ต่อสัปดาห์ (จันทร์ 08:00 น.)</p>
+                            
+                            <div class="form-group">
+                                <label for="reset-uid-key">เลือก KEY เพื่อรีเซ็ต UID</label>
+                                <select id="reset-uid-key" class="form-select">
+                                    <option value="">-- เลือก KEY --</option>
+                                </select>
+                            </div>
+
+                            <div id="reset-uid-key-info-container" style="display: none; margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px;">
+                                <h4>ข้อมูล KEY</h4>
+                                <p><strong>KEY ID:</strong> <span id="reset-uid-key-info-id">-</span></p>
+                                <p><strong>ระยะเวลา:</strong> <span id="reset-uid-key-info-days">-</span> วัน</p>
+                                <p><strong>วันหมดอายุ:</strong> <span id="reset-uid-key-info-expires">-</span></p>
+                                <p><strong>เครื่องที่ใช้:</strong> <span id="reset-uid-key-info-devices">-</span></p>
+                            </div>
+
+                            <div id="reset-uid-info-box" style="display: none; margin-top: 20px; padding: 15px; background: #2a2a2a; border-radius: 8px;">
+                                <p><strong>UID ปัจจุบัน:</strong> <code id="reset-uid-current">-</code></p>
+                                <p><strong>ใช้ได้:</strong> <span id="reset-uid-usage-count">1/1</span></p>
+                                <p><strong>ครั้งถัดไป:</strong> <span id="reset-uid-next-reset">จันทร์ 08:00:00 น.</span></p>
+                            </div>
+
+                            <div style="margin-top: 20px; padding: 15px; background: #ffab5e20; border-radius: 8px; border-left: 4px solid #ffab5e;">
+                                <strong>⚠️ คำเตือน:</strong> การรีเซ็ต UID จะเปลี่ยน UID ทั้งหมด และจะรีเซ็ตการใช้งาน
+                            </div>
+
+                            <button id="reset-uid-btn" class="btn btn-danger" style="margin-top: 20px; display: none;" onclick="performResetUID()">รีเซ็ต UID ตอนนี้</button>
+                            <button id="reset-uid-disabled-btn" class="btn btn-danger" style="margin-top: 20px; display: none; opacity: 0.5;" disabled>รอบถัดไป: จันทร์ 08:00:00 น.</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>ประวัติการรีเซ็ต UID</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>KEY</th>
+                                    <th>สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reset-uid-history-list">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #888;">ยังไม่มีการรีเซ็ต UID</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="message" id="reset-uid-message"></div>
+                </div>
+
+                <!-- Download Page -->
+                <div id="download-page" class="page">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Android Section -->
+                        <div class="form-card">
+                            <h3>สำหรับ ANDROID</h3>
+                            <p style="color: #b0b0b0; margin-bottom: 20px;">อัพเดท ModMenu และตัวเกมล่าสุด วันที่ 23-12-25 08:00:00 น.</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <button class="pkg-btn" onclick="downloadFile('vphonegaga')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">Vphonegaga (โปรแกรมจำลอง)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ ANDROID</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mod-menu-free')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">Mod Menu ฟรี (ตัวโปรแบบฟรี)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ ANDROID</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mod-menu-mobile')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">Mod Menu VIP (ตัวโปรแบบVIP)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ ANDROID</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('game-32bit')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">ตัวเกม 32Bit</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ ANDROID</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mt-manager')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">MT manager</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ ANDROID</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PC Section -->
+                        <div class="form-card">
+                            <h3>สำหรับ PC</h3>
+                            <p style="color: #b0b0b0; margin-bottom: 20px;">รองรับ INTEL และ AMD (ต้องใช้บน MuMu12)</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <button class="pkg-btn" onclick="downloadFile('mumu12')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">MuMu12 (โปรแกรมจำลอง)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ PC</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mod-menu-free-pc')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">Mod Menu ฟรี (ตัวโปรแบบฟรี)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ PC</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mod-menu-pc')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">Mod Menu VIP (ตัวโปรแบบVIP)</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ PC</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('game-32bit-pc')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">ตัวเกม 32Bit</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ PC</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                                <button class="pkg-btn" onclick="downloadFile('mt-manager-pc')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 15px;">
+                                    <div style="text-align: left; flex: 1;">
+                                        <p class="pkg-name" style="margin: 0; font-size: 14px;">MT manager</p>
+                                        <p style="font-size: 12px; color: #888; margin: 5px 0 0 0;">สำหรับ PC</p>
+                                    </div>
+                                    <i class="fas fa-download" style="font-size: 20px; color: var(--primary-color);"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message" id="download-message"></div>
+                </div>
+
+                <!-- Profile Settings Page -->
+                <div id="profile-page" class="page">
+                    <div class="form-card">
+                        <h3>ข้อมูลส่วนตัว</h3>
+                        <div class="form-group">
+                            <label>ชื่อผู้ใช้</label>
+                            <input type="text" id="profile-username" value="" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>อีเมล</label>
+                            <input type="email" id="profile-email" value="user@example.com">
+                        </div>
+
+                        <button class="btn btn-primary" onclick="updateProfile()">บันทึกการเปลี่ยนแปลง</button>
+
+                        <hr style="margin: 30px 0;">
+
+                        <h3>เปลี่ยนรหัสผ่าน</h3>
+                        <div class="form-group">
+                            <label>รหัสผ่านเดิม</label>
+                            <input type="password" id="old-password" placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group">
+                            <label>รหัสผ่านใหม่</label>
+                            <input type="password" id="new-password" placeholder="••••••••">
+                        </div>
+
+                        <div class="form-group">
+                            <label>ยืนยันรหัสผ่าน</label>
+                            <input type="password" id="confirm-password" placeholder="••••••••">
+                        </div>
+
+                        <button class="btn btn-primary" onclick="changePassword()">เปลี่ยนรหัสผ่าน</button>
+                    </div>
+
+                    <div class="message" id="profile-message"></div>
+                </div>
+
+                <!-- Tutorial Page -->
+                <div id="tutorial-page" class="page">
+                    <div class="form-card">
+                        <h3>วิธีใช้งานและสอนติดตั้ง</h3>
+
+                        <div class="tutorial-section" style="margin-top: 30px; padding: 20px; background: #2a2a2a; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">📱 สำหรับผู้ใช้ Android</h4>
+                            <ol style="line-height: 2; color: #b0b0b0;">
+                                <li>ดาวน์โหลด Vphonegaga จากหน้า <strong>ดาวน์โหลด</strong></li>
+                                <li>ติดตั้ง Vphonegaga บนอุปกรณ์ของคุณ</li>
+                                <li>เปิด Vphonegaga และเข้าสู่ระบบ</li>
+                                <li>ไปที่เมนู <strong>ตั้งค่า</strong> → <strong>ตัวเพิ่มเสริม</strong></li>
+                                <li>ติดตั้ง Mod Menu และใช้งาน KEY ของคุณ</li>
+                                <li>คัดลอก KEY ID จากหน้า <strong>KEY VIP ของฉัน</strong></li>
+                                <li>นำ KEY ไปใส่ใน Mod Menu</li>
+                                <li>เพลิดเพลินกับเกมแบบไม่มีขีดจำกัด!</li>
+                            </ol>
+                        </div>
+
+                        <div class="tutorial-section" style="padding: 20px; background: #2a2a2a; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">💻 สำหรับผู้ใช้ PC</h4>
+                            <ol style="line-height: 2; color: #b0b0b0;">
+                                <li>ดาวน์โหลด MuMu12 (Android Emulator) จากหน้า <strong>ดาวน์โหลด</strong></li>
+                                <li>ติดตั้ง MuMu12 บนคอมพิวเตอร์ของคุณ</li>
+                                <li>เปิด MuMu12 และติดตั้ง Vphonegaga</li>
+                                <li>เข้าสู่ระบบ Vphonegaga ใน Emulator</li>
+                                <li>ติดตั้ง Mod Menu เหมือนขั้นตอน Android</li>
+                                <li>คัดลอก KEY ID จากหน้า <strong>KEY VIP ของฉัน</strong></li>
+                                <li>ใส่ KEY ลงใน Mod Menu</li>
+                                <li>เล่นเกมจากคอมพิวเตอร์ของคุณด้วยเม็ด mod!</li>
+                            </ol>
+                        </div>
+
+                        <div class="tutorial-section" style="padding: 20px; background: #2a2a2a; border-radius: 8px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">⚠️ สิ่งที่ควรรู้</h4>
+                            <ul style="line-height: 2; color: #b0b0b0;">
+                                <li><strong>KEY ของคุณ:</strong> ไม่ควรแชร์ KEY กับคนอื่น เนื่องจากมีการจำกัดการใช้งาน 1 เครื่องต่อ 1 KEY</li>
+                                <li><strong>การหมดอายุ:</strong> ตรวจสอบวันหมดอายุของ KEY จากหน้า <strong>KEY VIP ของฉัน</strong></li>
+                                <li><strong>การต่ออายุ:</strong> หากต้องการต่ออายุ ให้ไปที่หน้า <strong>ต่ออายุ KEY VIP</strong></li>
+                                <li><strong>เพิ่มเครื่อง:</strong> สามารถเพิ่มเครื่องล็อกอินผ่านหน้า <strong>เพิ่มเครื่องล็อกอิน</strong> ได้</li>
+                                <li><strong>UID Reset:</strong> หากต้องการเปลี่ยนผู้ใช้เกม ให้รีเซ็ต UID จากหน้า <strong>รีเซ็ต UID</strong></li>
+                                <li><strong>Support:</strong> หากมีปัญหา ติดต่อ Support 24/7 ได้ตลอดเวลา</li>
+                            </ul>
+                        </div>
+
+                        <div class="tutorial-section" style="padding: 20px; background: #1a4d2e; border-radius: 8px; margin-top: 20px; border-left: 4px solid var(--primary-color);">
+                            <h4 style="color: var(--primary-color); margin-bottom: 10px;">✅ เคล็ดลับเพิ่มเติม</h4>
+                            <p style="color: #b0b0b0; line-height: 1.8;">
+                                เพื่อให้ได้ประสบการณ์ที่ดีที่สุด ให้แน่ใจว่า:
+                                <br>• ใช้ KEY แบบแอกทีฟเท่านั้น (ไม่หมดอายุ)
+                                <br>• อัพเดต Mod Menu เป็นเวอร์ชั่นล่าสุด
+                                <br>• ปิด VPN/Proxy ก่อนใช้ KEY
+                                <br>• ลอง Mod Menu ก่อนซื้อ KEY เพื่อความมั่นใจ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loading-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="text-align: center; max-width: 200px;">
+            <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px;">
+                <div style="width: 60px; height: 60px;">
+                    <img src="./assets/panda-logo.png" alt="Loading" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+                <div style="display: flex; justify-content: center; gap: 8px;">
+                    <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: bounce 1.4s infinite;"></div>
+                    <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></div>
+                    <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%; animation: bounce 1.4s infinite 0.4s;"></div>
+                </div>
+                <p id="loading-text" style="color: #b0b0b0; margin: 0; font-size: 14px;">กำลังประมวลผล...</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+
+    <script src="./config.js"></script>
+    <script src="./script.js"></script>
+    <script src="./dashboard.js"></script>
+</body>
+</html>
+
